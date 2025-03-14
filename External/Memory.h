@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include "log.h"
 #include <map>
-
+#include <psapi.h>
 
 class TMemory
 {
@@ -19,10 +19,113 @@ public:
 
 
 	template<typename T>
-	auto read(uintptr_t address) -> T {
+	auto read(DWORD ClientId, uintptr_t address) -> T {
 		T buff;
 		SIZE_T size;
 
+#if _DEBUG
+		Logger::debug("OpenProcess started.");
+#endif 
+
+
+		HANDLE hClient = OpenProcess(PROCESS_ALL_ACCESS, false, ClientId);
+		if (hClient == INVALID_HANDLE_VALUE) {
+			Logger::error("Couldn't open process, may not running. (STATUS_CODE=%d)", GetLastError());
+			return 0;
+		}
+
+#if _DEBUG
+		for (const auto& client : clients) {
+			if (client.first == ClientId) {
+				Logger::debug("Passed, Read memory at (%llx) on (%ls)", address, client.second.c_str());
+			}
+		}
+#endif 
+
+		if (!ReadProcessMemory(hClient, address, buff, sizeof(buff), size)) {
+
+#if _DEBUG
+			for (const auto& client : clients) {
+				if (client.first == ClientId) {
+					Logger::warning("Failed to Read memory at (%llx) on (%ls)", address, client.second.c_str());
+				}
+			}
+#else
+	Logger::error("Failed to read memory. (STATUS_CODE=%d)", GetLastError());
+#endif 
+
+			return 0;
+		}
+
+
+
+		return buff;
+	}
+
+	template<typename T>
+	auto read_on_module(DWORD ClientId, uintptr_t address) -> T {
+		T buff;
+		DWORD size;
+		SIZE_T Size;
+
+		if (clients.empty()) {
+			Logger::error("Couldn't read because none of client is running (BRUH!)");
+			return 0;
+		}
+
+
+#if _DEBUG
+		Logger::debug("OpenProcess started.");
+#endif 
+
+		HANDLE hClient = OpenProcess(PROCESS_ALL_ACCESS, false, ClientId);
+		if (hClient == INVALID_HANDLE_VALUE) {
+			Logger::error("Couldn't open process, may not running. (STATUS_CODE=%d)", GetLastError());
+			return 0; 
+		}
+
+		MODULEINFO moduleInfo = {};
+		HMODULE hModule = nullptr;
+		if (EnumProcessModules(hClient, &hModule, sizeof(hModule), &size)) {
+			if (GetModuleInformation(hClient, hModule, &moduleInfo, sizeof(moduleInfo))) {
+				uintptr_t base = reinterpret_cast<uintptr_t>(moduleInfo.lpBaseOfDll);
+
+#if _DEBUG
+				for (const auto& client : clients) {
+					if (client.first == ClientId) {
+						Logger::debug("(%ls) Base address: (%llx)", client.second.c_str(), base);
+					}
+				}
+#endif 
+
+				uintptr_t Address = base + address;
+
+#if _DEBUG
+				Logger::debug("Reading memory at (%llx)", Address);
+#endif
+
+				if (!ReadProcessMemory(hClient, reinterpret_cast<LPCVOID>(Address), &buff, sizeof(buff), &Size)) {
+#if _DEBUG
+					for (const auto& client : clients) {
+						if (client.first == ClientId) {
+							Logger::warning("Failed to Read memory at (%llx) on (%ls)", Address, client.second.c_str());
+						}
+					}
+#else
+					Logger::error("Failed to read memory. (STATUS_CODE=%d)", GetLastError());
+#endif 
+					return 0; 
+				}
+			}
+			else {
+				Logger::error("Failed to get module. (STATUS_CODE=%d)", GetLastError());
+			}
+		}
+		else {
+			Logger::error("Failed to get module. (STATUS_CODE=%d)", GetLastError());
+		}
+
+		CloseHandle(hClient);
 
 		return buff;
 	}
@@ -67,7 +170,31 @@ public:
 		Logger::success("Memory successfuly initialize!");
 	}
 
+	auto test(const std::wstring& ClientName) -> void {
+		Sleep(5000);
+		auto result = this->read_on_module<uintptr_t>(this->GetClient(ClientName), 0x61E5E38);
+		Logger::info("result on (%ls) : %llx", ClientName.c_str(), result);
+	}
 
+	auto ClientsRunning() -> bool {
+		if (clients.empty()) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+	auto GetClient(const std::wstring& Name) -> DWORD {
+		for (const auto& client : clients) {
+			if (client.second == Name) {
+				return client.first;
+			}
+		}
+
+		Logger::error(L"Client not found: %ls", Name.c_str());
+		return 0;
+	}
 
 	auto RefreshProcessList() -> void {
 		std::unordered_map<DWORD, std::wstring> newMap;
@@ -124,6 +251,7 @@ public:
 				for (const auto& [id, name] : clients) {
 					if (!previousClients.count(id)) {
 						Logger::warning("Detected new process running: (%ls) {%d}", name.c_str(), id);
+						test(name);
 					}
 				}
 
