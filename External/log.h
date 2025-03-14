@@ -1,3 +1,5 @@
+// This shit is from chatgpt logger because im too lazy to make one :brokenheart:
+
 #include <Windows.h>
 #include <iostream>
 #include <sstream>
