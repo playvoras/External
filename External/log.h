@@ -1,5 +1,5 @@
 // This shit is from chatgpt logger because im too lazy to make one :brokenheart:
-
+#pragma once
 #include <Windows.h>
 #include <iostream>
 #include <sstream>
@@ -8,10 +8,21 @@
 #include <cstdio>
 #include <cstdarg>
 #include <string>
+#include <wrl.h>
+#include <string>
+#include <winrt/Windows.UI.Notifications.h>
+#include <winrt/Windows.Data.Xml.Dom.h>
+#include <winrt/impl/windows.ui.notifications.0.h>
+#include <winrt/impl/windows.ui.notifications.2.h>
+
 
 #define FOREGROUND_MAGENTA 0x5
 #define FOREGROUND_YELLOW 0x6
 #define FOREGROUND_WHITE 0x7
+
+using namespace winrt;
+using namespace winrt::Windows::UI::Notifications;
+using namespace winrt::Windows::Data::Xml::Dom;
 
 class Logger {
 private:
@@ -121,5 +132,22 @@ public:
         va_start(args, format);
         logMessage("DEBUG", format, args);
         va_end(args);
+    }
+
+    Logger() {
+        winrt::init_apartment();  // Initialize WinRT once
+    }
+
+    static void ShowToastNotification(const std::wstring& ClientName) {
+        winrt::init_apartment();
+
+        std::wstring xml = L"<toast><visual><binding template='ToastGeneric'><text>Warning</text><text>Failed getting Task Scheduler on " +
+                           ClientName + L"</text></binding></visual></toast>";
+
+        winrt::Windows::Data::Xml::Dom::XmlDocument doc;
+        doc.LoadXml(xml);
+
+        winrt::Windows::UI::Notifications::ToastNotification toast(doc);
+        winrt::Windows::UI::Notifications::ToastNotificationManager::CreateToastNotifier(L"YourAppID").Show(toast);
     }
 };

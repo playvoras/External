@@ -13,10 +13,16 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\TaskScheduler">
+      <UniqueIdentifier>{4173c3af-b724-4abd-8d3c-1cdbfc07370a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="External.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TaskScheduler\TaskScheduler.cpp">
+      <Filter>Header Files\TaskScheduler</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -24,6 +30,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="log.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TaskScheduler\TaskScheduler.h">
+      <Filter>Header Files\TaskScheduler</Filter>
+    </ClInclude>
+    <ClInclude Include="TypeDefinitions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

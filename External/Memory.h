@@ -4,6 +4,7 @@
 #include <iostream>
 #include <TlHelp32.h>
 #include <unordered_map>
+#include "TaskScheduler/TaskScheduler.h"
 #include "log.h"
 #include <map>
 #include <psapi.h>
@@ -21,12 +22,14 @@ public:
 	template<typename T>
 	auto read(DWORD ClientId, uintptr_t address) -> T {
 		T buff;
-		SIZE_T size;
 
+		if (address < 0x10000 || address > 0x7FFFFFFFFFFF) {
 #if _DEBUG
-		Logger::debug("OpenProcess started.");
-#endif 
+			Logger::warning("Skipped (Unknown Address) address: %llx", address);
+#endif
 
+			return 0;
+		}
 
 		HANDLE hClient = OpenProcess(PROCESS_ALL_ACCESS, false, ClientId);
 		if (hClient == INVALID_HANDLE_VALUE) {
@@ -34,15 +37,17 @@ public:
 			return 0;
 		}
 
+
 #if _DEBUG
 		for (const auto& client : clients) {
 			if (client.first == ClientId) {
 				Logger::debug("Passed, Read memory at (%llx) on (%ls)", address, client.second.c_str());
+				break;
 			}
 		}
 #endif 
 
-		if (!ReadProcessMemory(hClient, address, buff, sizeof(buff), size)) {
+		if (!ReadProcessMemory(hClient, reinterpret_cast<PVOID>(address), &buff, sizeof(T), nullptr)) {
 
 #if _DEBUG
 			for (const auto& client : clients) {
@@ -66,17 +71,12 @@ public:
 	auto read_on_module(DWORD ClientId, uintptr_t address) -> T {
 		T buff;
 		DWORD size;
-		SIZE_T Size;
 
 		if (clients.empty()) {
 			Logger::error("Couldn't read because none of client is running (BRUH!)");
 			return 0;
 		}
 
-
-#if _DEBUG
-		Logger::debug("OpenProcess started.");
-#endif 
 
 		HANDLE hClient = OpenProcess(PROCESS_ALL_ACCESS, false, ClientId);
 		if (hClient == INVALID_HANDLE_VALUE) {
@@ -104,7 +104,7 @@ public:
 				Logger::debug("Reading memory at (%llx)", Address);
 #endif
 
-				if (!ReadProcessMemory(hClient, reinterpret_cast<LPCVOID>(Address), &buff, sizeof(buff), &Size)) {
+				if (!ReadProcessMemory(hClient, reinterpret_cast<LPCVOID>(Address), &buff, sizeof(buff), nullptr)) {
 #if _DEBUG
 					for (const auto& client : clients) {
 						if (client.first == ClientId) {
@@ -128,6 +128,51 @@ public:
 		CloseHandle(hClient);
 
 		return buff;
+	}
+
+	auto read_string_unknown(DWORD ClientId, uintptr_t address) -> std::string {
+
+#if _DEBUG
+		for (const auto& client : clients) {
+			if (client.first == ClientId) {
+				Logger::debug("Read string memory at (%llx) on (%ls)", address, client.second.c_str());
+				break;
+			}
+		}
+#endif 
+
+		std::string string;
+		char character = 0;
+		int char_size = sizeof(character);
+		int offset = 0;
+
+		string.reserve(204);
+
+		while (offset < 200) {
+			character = read<char>(ClientId, (address + offset));
+
+			if (character == 0)
+				break;
+
+			offset += char_size;
+			string.push_back(character);
+		}
+
+
+		return string;
+	}
+
+	auto read_string(DWORD ClientId, uintptr_t address) -> std::string {
+		const auto length = this->read<int>(ClientId, (address + 0x10));
+
+		if (length >= 16u) {
+			const auto name = this->read<uintptr_t>(ClientId, address);
+			return read_string_unknown(ClientId, name);
+		}
+		else {
+			const auto name = read_string_unknown(ClientId, address);
+			return name;
+		}
 	}
 
 	auto Init(const wchar_t* ProcessName) -> void {
@@ -172,7 +217,7 @@ public:
 
 	auto test(const std::wstring& ClientName) -> void {
 		Sleep(5000);
-		auto result = this->read_on_module<uintptr_t>(this->GetClient(ClientName), 0x61E5E38);
+		auto result = this->read_on_module<uintptr_t>(this->GetClient(ClientName), 0x5E723A8);
 		Logger::info("result on (%ls) : %llx", ClientName.c_str(), result);
 	}
 
@@ -251,7 +296,9 @@ public:
 				for (const auto& [id, name] : clients) {
 					if (!previousClients.count(id)) {
 						Logger::warning("Detected new process running: (%ls) {%d}", name.c_str(), id);
-						test(name);
+						Sleep(7000);
+						auto DataModel = TaskScheduler->GetDataModelClient(name);
+						Logger::info("(%ls) DataModel: %llx", name.c_str(), DataModel);
 					}
 				}
 

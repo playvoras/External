@@ -12,8 +12,8 @@ int main()
     }
     else 
     {
-        auto result = Memory->read_on_module<uintptr_t>(Memory->GetClient(L"Client 1"), 0x61E5E38);
-        Logger::info("Result: %llx", result);
+        auto re = TaskScheduler->GetDataModelClient(L"Client 1");
+        Logger::info("Result: %llx", re);
     }
 
 

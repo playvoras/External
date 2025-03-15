@@ -130,10 +130,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="External.cpp" />
+    <ClCompile Include="TaskScheduler\TaskScheduler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="log.h" />
     <ClInclude Include="Memory.h" />
+    <ClInclude Include="TypeDefinitions.h" />
+    <ClInclude Include="TaskScheduler\TaskScheduler.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
