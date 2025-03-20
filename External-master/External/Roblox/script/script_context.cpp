@@ -1,4 +1,4 @@
-#include "../../offsets.h"
+#include "../offsets.h"
 #include "script_context.h"
 #include <Memory.h>
 
@@ -31,7 +31,7 @@ namespace rbx::classes {
 	}
 
 	bool set_modulesunlocked(uintptr_t address, bool value) {
-		process->write_bool(
+		return process->write_bool(
 			address + SCRIPTCONTEXT_MODULESUNLOCKED, 
 			&value
 		);

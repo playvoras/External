@@ -10,7 +10,7 @@ struct Offsets {
 };
 
 struct Addresses {
-	static constexpr std::uintptr_t RawScheduler = 0x61E5E38;
+	static constexpr std::uintptr_t RawScheduler = 0x627D908;
 };
 
 

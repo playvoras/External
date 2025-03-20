@@ -1,4 +1,4 @@
-#include "../../offsets.h"
+#include "../offsets.h"
 #include <Memory.h>
 #include "module_script.h"
 #include "base_script.h"

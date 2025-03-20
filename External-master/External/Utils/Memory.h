@@ -167,6 +167,11 @@ public:
     auto get_window() -> HWND { return rbx_window;  }
     auto get_thread() -> DWORD { return rbx_thread_id;  }
 
+    auto IsRunning() -> bool {
+        if (!rbx_window) return false;
+        return true;
+    }
+
     auto pattern_scan(const std::string& pattern) -> uintptr_t {
         if (!process_handle) return 0;
 

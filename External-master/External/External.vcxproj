@@ -70,6 +70,9 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>$(ProjectDir)/Utils;$(IncludePath)</IncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -133,6 +136,7 @@ C:\Program Files\Microsoft Visual Studio\2022\Community\VC\vcpkg\installed\x64-w
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="External.cpp" />
+    <ClCompile Include="Roblox\instance\instance.cpp" />
     <ClCompile Include="Roblox\script\base_script.cpp" />
     <ClCompile Include="Roblox\script\module_script.cpp" />
     <ClCompile Include="Roblox\script\script_context.cpp" />
@@ -142,6 +146,7 @@ C:\Program Files\Microsoft Visual Studio\2022\Community\VC\vcpkg\installed\x64-w
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Roblox\Instance.h" />
+    <ClInclude Include="Roblox\instance\instance.h" />
     <ClInclude Include="Roblox\Luau\include\Luau\resource.h" />
     <ClInclude Include="Roblox\offsets.h" />
     <ClInclude Include="Roblox\script\base_script.h" />

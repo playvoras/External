@@ -20,9 +20,6 @@
     <ClCompile Include="Roblox\TaskScheduler\TaskScheduler.cpp">
       <Filter>Header Files\TaskScheduler</Filter>
     </ClCompile>
-    <ClCompile Include="Roblox\Instance.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Utils\ntdll.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -36,6 +33,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Roblox\script\base_script.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Roblox\instance\instance.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -80,6 +80,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Roblox\script\base_script.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Roblox\instance\instance.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
