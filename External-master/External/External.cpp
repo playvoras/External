@@ -12,7 +12,7 @@ static void print_address(const std::string& name, uintptr_t offset) {
     }
     else {
         std::ostringstream oss;
-        oss << name << ": 0x" << std::uppercase << std::hex << offset;  // Convert to uppercase hex
+        oss << name << ": 0x" << std::uppercase << std::hex << offset;
         std::cout << oss.str() << std::endl;
     }
 }
@@ -32,6 +32,17 @@ int main()
     print_address("[?] DataModel", re);
     std::cout << DataModel->GetName() << std::endl;
 
+    auto Workspace = DataModel->FindFirstChild("Workspace");
+    if (Workspace) {
+        std::cout << "workspace " << Workspace->GetName() << std::endl;
+        auto Descendants = Workspace->GetDescendants();
+        for (const auto& v : Descendants) {
+            std::cout << "instance: " << v->GetName() << std::endl;
+        }
+    }
+    else {
+        std::cout << "the hell" << std::endl;
+    }
 
     return 0;
 }
