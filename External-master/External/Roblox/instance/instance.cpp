@@ -10,6 +10,50 @@ auto tInstance::GetName() -> std::string
 	return Name;
 }
 
+auto tInstance::GetChildren() -> std::vector<tInstance*>
+{
+	std::vector<tInstance*> children;
+
+	if (!this->InstanceAddress)
+		return children;
+
+	uintptr_t start = process->read_longlong(this->InstanceAddress + rbx::offsets::INSTANCE_CHILDREN);
+
+	if (!start)
+		return children;
+
+	uintptr_t end = process->read_longlong(start + 8);
+	uintptr_t instances = process->read_longlong(start);
+
+	while (instances != end) {
+		children.push_back(Instance(process->read_longlong(instances)));
+		instances += 0x10;
+	}
+
+	return children;
+}
+
+auto tInstance::GetDescendants() -> std::vector<tInstance*>
+{
+	std::vector<tInstance*> descendants;
+	std::vector<tInstance*> stack;
+
+	stack.push_back(this);
+
+	while (!stack.empty()) {
+		tInstance* current = stack.back();
+		stack.pop_back();
+
+		auto children = current->GetChildren();
+		for (auto child : children) {
+			descendants.push_back(child);
+			stack.push_back(child);
+		}
+	}
+
+	return descendants;
+}
+
 auto tInstance::GetRobloxClassName() -> std::string
 {
 	uintptr_t PointerClassDescriptor = process->read_longlong(this->InstanceAddress + rbx::offsets::INSTANCE_CLASSDESCRIPTOR);
