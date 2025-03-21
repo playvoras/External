@@ -16,6 +16,8 @@ public:
     auto GetName() -> std::string;
     auto GetRobloxClassName() -> std::string;
     auto Parent() -> uintptr_t;
+    auto GetChildren() -> std::vector<tInstance*>;
+    auto GetDescendants() -> std::vector<tInstance*>;
     auto GetKids() -> std::vector<tInstance*>;
     auto FindFirstChild(std::string ChildName) -> tInstance*;
     auto WaitForChild(std::string ChildName, int timeout = 5) -> tInstance*;
